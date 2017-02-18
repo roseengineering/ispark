@@ -1,0 +1,41 @@
+
+profile: default
+key_name: mykey
+security_group: default
+vpc_subnet: subnet-ee72ddc5
+
+# cluster
+
+count: 2
+instance_type: m4.large
+# instance_type: t2.micro
+data_path: /var
+user: "{{ lookup('env','USER') }}"
+image: ami-f0768de6
+region: us-east-1
+
+# hadoop
+
+# $ python yarn-utils.py -c 2 -m 8 -d 1 -k False
+# Num Container=3
+# yarn.scheduler.minimum-allocation-mb=2048
+# yarn.scheduler.maximum-allocation-mb=6144
+# yarn.nodemanager.resource.memory-mb=6144
+# mapreduce.map.memory.mb=1024
+# mapreduce.map.java.opts=-Xmx819m
+# mapreduce.reduce.memory.mb=2048
+# mapreduce.reduce.java.opts=-Xmx1638m
+# yarn.app.mapreduce.am.resource.mb=1024
+# yarn.app.mapreduce.am.command-opts=-Xmx819m
+# mapreduce.task.io.sort.mb=409
+
+yarn_minimum_mb: 2048
+yarn_maximum_mb: 6144
+map_memory_mb: 1024
+map_memory_opts: -Xmx819m
+reduce_memory_mb: 2048
+reduce_memory_opts: -Xmx1638m
+am_memory_mb: 1024
+am_memory_opts: -Xmx819m
+sort_memory_mb: 409
+
