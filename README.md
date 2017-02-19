@@ -17,7 +17,7 @@ I installed the python3 version of ansible on my host computer using:
      $ sudo easy_install3 pip 
      $ sudo pip install ansible
 
-Extra programs: The python program kill\_all.py when run will terminate all 
+Extra programs: The python program kill\_all.py terminates all 
 running instances in EC2.  The file yarn-utils.py is program from apache for
 calculating hadoop memory settings.  I used its output to set the values in 
 config.yml.
@@ -27,9 +27,9 @@ be generated when done:
 
 1. master.sh: Connects to the master instance using ssh.
 
-2. proxy.sh: Tunnels into tinyproxy on the master node.  The script will then open chrome to the spark and hadoop UI webapps running on the cluster.
+2. proxy.sh: Tunnels into the tinyproxy server on the master node using ssh.  The script opens chrome to the spark and hadoop UI webapps running on the cluster.
 
-3. notebook.sh: Tunnels to the jupyter server running on the master using ssh.  It then opens chrome to the jupyter notebook. (Jupyter websockets do not work through http proxies.)
+3. notebook.sh: Tunnels into the jupyter server on the master node using ssh.  It then opens chrome to the jupyter notebook. (Jupyter websockets do not work through http proxies.)
 
 4. push.sh: Pushes your local repo up to the master node.
 
