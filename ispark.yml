@@ -329,6 +329,24 @@
       url: http://www.usconstitution.net/const.txt
       dest: .
 
+  # git
+
+  - name: git init
+    command: git init --bare .git
+  - name: git hook
+    copy: 
+      dest: .git/hooks/post-receive 
+      mode: 0775
+      content: |
+        while read oldrev newrev ref; do
+          echo $ref
+          if [ "$ref" = "refs/heads/master" ]; then
+            export GIT_WORK_TREE=$(dirname $PWD)
+            git clean -f -d -e "/.*" $GIT_WORK_TREE
+            git checkout -f master
+          fi
+        done
+
   # jupyter
 
   - name: install pip
@@ -374,15 +392,6 @@
 
   # spark
 
-  - name: R notebook example
-    get_url:
-      url: https://raw.githubusercontent.com/jadianes/spark-r-notebooks/master/notebooks/nb0-starting-up/nb0-starting-up.ipynb
-      dest: .
-  - name: sparkR.sh
-    copy:
-      dest: ./sparkR.sh
-      content: |
-        sparkR --master spark://{{ groups.private[0] }}:7077 $@
   - name: submit.sh
     copy:
       dest: ./submit.sh
@@ -418,22 +427,13 @@
         spark-submit --master yarn wc.py
         echo press return to continue; read INPUT
         spark-submit --master yarn --deploy-mode cluster wc.py
-  - name: pyspark.sh
+  - name: notebook.sh
     copy:
-      dest: ./pyspark.sh
-      content: |
-        pyspark --master spark://{{ groups.private[0] }}:7077 $@
-  - name: ispark.sh
-    copy:
-      dest: ./ispark.sh
+      dest: ./notebook.sh
       content: |
         export PYSPARK_DRIVER_PYTHON=jupyter
         export PYSPARK_DRIVER_PYTHON_OPTS=notebook
         pyspark --master spark://{{ groups.private[0] }}:7077
-  - name: pyspark notebook example
-    get_url:
-      url: https://raw.githubusercontent.com/jadianes/spark-py-notebooks/master/nb1-rdd-creation/nb1-rdd-creation.ipynb
-      dest: .
 
   # start spark
 
@@ -508,10 +508,15 @@
       line: google-chrome --proxy-server=localhost:8888 {{ item }}:8042 & # yarn NM
       insertbefore: ssh
     with_items: "{{ groups.private[1:] }}"
-  - name: ispark.sh
+  - name: notebook.sh
     copy:
-      dest: ./ispark.sh
+      dest: ./notebook.sh
       content: |
         google-chrome http://localhost:8000 &
         ssh -N -L 8000:localhost:8000 {{ groups.public[0] }}
+  - name: push.sh
+    copy:
+      dest: ./push.sh
+      content: |
+        git push ssh://{{ groups.public[0] }}/~/.git master
 

@@ -24,27 +24,23 @@ be generated when done:
 
 2. proxy.sh: This script creates a ssh tunnel into tinyproxy which is running on the master.  The script will then open chrome to the spark and hadoop UI webapps running on the cluster.
 
-3. ispark.sh: This script tunnels to the jupyter server running on the master using ssh.  It then opens chrome to the jupyter notebook. (Jupyter websockets do not work through http proxies.)
+3. notebook.sh: This script tunnels to the jupyter server running on the master using ssh.  It then opens chrome to the jupyter notebook. (Jupyter websockets do not work through http proxies.)
 
 II. On the master server additional files are created:
 
 1. const.txt: The constitution of the United States.
 
-2. hive.sh: A simple hive example using const.txt.
+2. hive.sh: Runs a simple hive example using const.txt.
 
-3. mapreduce: A simple map-reduce example using const.txt.
+3. mapreduce.sh: Runs a simple map-reduce example using const.txt.
 
-4. pyspark.sh: A script which executes pyspark in standalone mode.
-
-5. sparkR.sh: A script which executes sparkR in standalone mode.
-
-6. submit.sh: A script which runs spark-submit in standalone mode.
+6. submit.sh: Runs spark-submit in standalone mode.
 
 6. wc.py: A simple python word count example for spark.
 
-7. wc.sh: A script which executes wc.py using const.txt.  wc.y is run three times, first in standalone mode, second in yarn client mode, and last in yarn cluster mode.
+7. wc.sh: Runs wc.py over const.txt.  wc.py is run three times, first in standalone mode, second in yarn client mode, and last in yarn cluster mode.
 
-8. ispark.sh: A script which run the jupyter notebook server.  Both the python3 and R notebooks should be available off the "new" button.  Run ispark.sh on the host to access the server.
+8. notebook.sh: Runs the jupyter notebook server.  Both the python3 and R notebooks should be available off the "new" button.  Run ispark.sh on the host to access the server.
 
-9. *.ipynb: Example notebooks for python and R.
+8. push.sh: Pushes your local repo to master.
 
