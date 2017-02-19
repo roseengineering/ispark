@@ -78,6 +78,11 @@
       line: "{{ item.1 }} node{{ item.0 }}"
     with_indexed_items: "{{ groups.private }}"
     become: yes
+  - name: hostnames
+    lineinfile:
+      dest: /etc/hosts
+      line: "{{ groups.private[0] }} master"
+    become: yes
 
   # packages
 
@@ -431,9 +436,12 @@
     copy:
       dest: ./notebook.sh
       content: |
-        export PYSPARK_DRIVER_PYTHON=jupyter
-        export PYSPARK_DRIVER_PYTHON_OPTS=notebook
-        pyspark --master spark://{{ groups.private[0] }}:7077
+        export SPARK_HOME=/usr/local/lib/spark
+        export PYTHONPATH="$SPARK_HOME/python:$PYTHONPATH"
+        export PYTHONPATH="$SPARK_HOME/python/lib/py4j-0.10.4-src.zip:$PYTHONPATH"
+        export R_LIBS="$SPARK_HOME/R/lib:$R_LIBS"
+        export SPARK_LOCAL_IP={{ groups.private[0] }}
+        jupyter notebook $@
 
   # start spark
 
