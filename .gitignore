@@ -1,4 +1,4 @@
 *.retry
-ispark.sh 
+notebook.sh 
 master.sh 
 proxy.sh

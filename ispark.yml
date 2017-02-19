@@ -207,7 +207,7 @@
     copy:
       dest: /usr/local/lib/spark/conf/spark-env.sh
       content: |
-         export SPARK_MASTER_HOST={{ groups.private[0] }}
+         export SPARK_MASTER_HOST=master
          export PYTHONHASHSEED=0
 
   # configure hadoop
@@ -253,7 +253,7 @@
       line: <property>{{ item }}</property>
       insertbefore: </configuration>
     with_items: 
-    - <name>fs.defaultFS</name><value>hdfs://{{ groups.private[0] }}</value>
+    - <name>fs.defaultFS</name><value>hdfs://master</value>
   - name: mapred-site.xml
     copy:
       dest: /usr/local/lib/hadoop/etc/hadoop/mapred-site.xml
@@ -286,7 +286,7 @@
     - <name>yarn.resourcemanager.hostname</name><value>localhost</value>
     - <name>yarn.nodemanager.local-dirs</name><value>{{ data_path }}/yarn</value>
     - <name>yarn.nodemanager.aux-services</name><value>mapreduce_shuffle</value>
-    - <name>yarn.resourcemanager.hostname</name><value>{{ groups.private[0] }}</value>
+    - <name>yarn.resourcemanager.hostname</name><value>master</value>
     - <name>yarn.nodemanager.hostname</name><value>node{{ play_hosts.index(inventory_hostname) }}</value>
 
   # configure hive
@@ -401,7 +401,7 @@
     copy:
       dest: ./submit.sh
       content: |
-        spark-submit --master spark://{{ groups.private[0] }}:7077 $@
+        spark-submit --master spark://master:7077 $@
   - name: wc.R
     copy:
       dest: ./wc.R
@@ -427,7 +427,7 @@
       dest: ./wc.sh
       content: |
         hadoop fs -put const.txt .
-        spark-submit --master spark://{{ groups.private[0] }}:7077 wc.py
+        spark-submit --master spark://master:7077 wc.py
         echo press return to continue; read INPUT
         spark-submit --master yarn wc.py
         echo press return to continue; read INPUT
@@ -440,7 +440,7 @@
         export PYTHONPATH="$SPARK_HOME/python:$PYTHONPATH"
         export PYTHONPATH="$SPARK_HOME/python/lib/py4j-0.10.4-src.zip:$PYTHONPATH"
         export R_LIBS="$SPARK_HOME/R/lib:$R_LIBS"
-        export SPARK_LOCAL_IP={{ groups.private[0] }}
+        export SPARK_LOCAL_IP=master
         jupyter notebook $@
 
   # start spark
