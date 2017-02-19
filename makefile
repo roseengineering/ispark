@@ -3,7 +3,7 @@ ispark:
 kill: clean
 	python3 kill_all.py
 clean: 
-	rm -f ispark.sh master.sh proxy.sh *.retry
+	rm -f push.sh ispark.sh master.sh proxy.sh *.retry
 .PHONY: ispark kill clean
 
 
