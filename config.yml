@@ -6,7 +6,7 @@ vpc_subnet: subnet-ee72ddc5
 
 # cluster
 
-count: 2
+count: 3
 instance_type: m4.large
 # instance_type: t2.micro
 data_path: /var

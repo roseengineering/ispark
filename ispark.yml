@@ -407,7 +407,8 @@
       dest: ./wc.R
       content: |
         library(SparkR)
-        sparkR.session()
+        sc = sparkR.session(master="spark://master:7077")
+        # rdd = SparkR:::textFile(sc, 'const.txt'); count(rdd)
         df <- as.DataFrame(faithful)
         count(df)
         head(select(df, df$eruptions))
