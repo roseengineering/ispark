@@ -119,10 +119,10 @@
       dest: ~/.profile 
       line: "{{ item }}"
     with_items: 
-    - PATH="/usr/lib/spark/bin:$PATH"
-    - PATH="/usr/lib/hadoop/bin:$PATH"
-    - PATH="/usr/lib/hive/bin:$PATH"
-    - export YARN_CONF_DIR=/usr/lib/hadoop/etc/hadoop
+    - PATH="/usr/local/lib/spark/bin:$PATH"
+    - PATH="/usr/local/lib/hadoop/bin:$PATH"
+    - PATH="/usr/local/lib/hive/bin:$PATH"
+    - export YARN_CONF_DIR=/usr/local/lib/hadoop/etc/hadoop
     - export PYSPARK_PYTHON=python3
     - '[ -z "$STY" -a -n "$SSH_TTY" ] && exec screen -RR'
 
@@ -132,16 +132,16 @@
     get_url:
       url: http://mirror.cc.columbia.edu/pub/software/apache/hadoop/common/hadoop-2.7.3/hadoop-2.7.3.tar.gz
       dest: ./hadoop.tgz
-  - name: mkdir /usr/lib/hadoop
+  - name: create hadoop directory
     file: 
-      dest: /usr/lib/hadoop
+      dest: /usr/local/lib/hadoop
       state: directory
       owner: "{{ user }}"
     become: yes
   - name: untar hadoop
     unarchive:
       src: /home/{{ user }}/hadoop.tgz
-      dest: /usr/lib/hadoop
+      dest: /usr/local/lib/hadoop
       extra_opts: --strip-components=1
       remote_src: yes
   - name: remove hadoop archive
@@ -153,16 +153,16 @@
     get_url:
       url: http://mirror.cc.columbia.edu/pub/software/apache/hive/hive-1.2.1/apache-hive-1.2.1-bin.tar.gz
       dest: ./hive.tgz
-  - name: mkdir /usr/lib/hive
+  - name: create hive directory
     file: 
-      dest: /usr/lib/hive
+      dest: /usr/local/lib/hive
       state: directory
       owner: "{{ user }}"
     become: yes
   - name: untar hive 
     unarchive:
       src: /home/{{ user }}/hive.tgz
-      dest: /usr/lib/hive
+      dest: /usr/local/lib/hive
       extra_opts: --strip-components=1
       remote_src: yes
   - name: remove hive archive
@@ -174,16 +174,16 @@
     get_url:
       url: http://mirror.cc.columbia.edu/pub/software/apache/spark/spark-2.1.0/spark-2.1.0-bin-hadoop2.7.tgz
       dest: ./spark.tgz
-  - name: mkdir /usr/lib/spark 
+  - name: create spark directory
     file: 
-      dest: /usr/lib/spark 
+      dest: /usr/local/lib/spark 
       state: directory
       owner: "{{ user }}"
     become: yes
   - name: untar spark
     unarchive:
       src: /home/{{ user }}/spark.tgz
-      dest: /usr/lib/spark
+      dest: /usr/local/lib/spark
       extra_opts: --strip-components=1
       remote_src: yes
   - name: remove spark archive
@@ -193,13 +193,13 @@
 
   - name: slaves
     lineinfile:
-      dest: /usr/lib/spark/conf/slaves
+      dest: /usr/local/lib/spark/conf/slaves
       line: "{{ item }}"
       create: yes
     with_items: "{{ groups.private[1:] }}"
   - name: master
     copy:
-      dest: /usr/lib/spark/conf/spark-env.sh
+      dest: /usr/local/lib/spark/conf/spark-env.sh
       content: |
          export SPARK_MASTER_HOST={{ groups.private[0] }}
          export PYTHONHASHSEED=0
@@ -217,24 +217,24 @@
       owner: "{{ user }}"
     become: yes
   - file: 
-      dest: /usr/lib/hadoop/etc/hadoop/slaves
+      dest: /usr/local/lib/hadoop/etc/hadoop/slaves
       state: absent
   - name: slaves
     lineinfile:
-      dest: /usr/lib/hadoop/etc/hadoop/slaves
+      dest: /usr/local/lib/hadoop/etc/hadoop/slaves
       line: "{{ item }}"
       create: yes
     with_items: "{{ groups.private[1:] }}"
   - name: hadoop-env.sh
     lineinfile:
-      dest: /usr/lib/hadoop/etc/hadoop/hadoop-env.sh
+      dest: /usr/local/lib/hadoop/etc/hadoop/hadoop-env.sh
       line: "{{ item }}"
     with_items: 
       - export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
       - export PYTHONHASHSEED=0
   - name: hdfs-site.xml
     lineinfile:
-      dest: /usr/lib/hadoop/etc/hadoop/hdfs-site.xml
+      dest: /usr/local/lib/hadoop/etc/hadoop/hdfs-site.xml
       line: <property>{{ item }}</property>
       insertbefore: </configuration>
     with_items: 
@@ -243,20 +243,20 @@
     - <name>dfs.namenode.checkpoint.dir</name><value>file://{{ data_path }}/dfs/snn</value>
   - name: core-site.xml
     lineinfile:
-      dest: /usr/lib/hadoop/etc/hadoop/core-site.xml
+      dest: /usr/local/lib/hadoop/etc/hadoop/core-site.xml
       line: <property>{{ item }}</property>
       insertbefore: </configuration>
     with_items: 
     - <name>fs.defaultFS</name><value>hdfs://{{ groups.private[0] }}</value>
   - name: mapred-site.xml
     copy:
-      dest: /usr/lib/hadoop/etc/hadoop/mapred-site.xml
+      dest: /usr/local/lib/hadoop/etc/hadoop/mapred-site.xml
       content: |
         <configuration>
         </configuration>
   - name: mapred-site.xml
     lineinfile:
-      dest: /usr/lib/hadoop/etc/hadoop/mapred-site.xml
+      dest: /usr/local/lib/hadoop/etc/hadoop/mapred-site.xml
       line: <property>{{ item }}</property>
       insertbefore: </configuration>
     with_items: 
@@ -270,7 +270,7 @@
     - <name>yarn.app.mapreduce.am.command-opts</name><value>{{ am_memory_opts }}</value>
   - name: yarn-site.xml
     lineinfile:
-      dest: /usr/lib/hadoop/etc/hadoop/yarn-site.xml
+      dest: /usr/local/lib/hadoop/etc/hadoop/yarn-site.xml
       line: <property>{{ item }}</property>
       insertbefore: </configuration>
     with_items: 
@@ -292,13 +292,13 @@
     become: yes
   - name: hive-site.xml
     copy:
-      dest: /usr/lib/hive/conf/hive-site.xml
+      dest: /usr/local/lib/hive/conf/hive-site.xml
       content: |
         <configuration>
         </configuration>
   - name: mapred-site.xml
     lineinfile:
-      dest: /usr/lib/hive/conf/hive-site.xml
+      dest: /usr/local/lib/hive/conf/hive-site.xml
       line: <property>{{ item }}</property>
       insertbefore: </configuration>
     with_items: 
@@ -368,9 +368,12 @@
     - install.packages(c('repr', 'IRdisplay', 'crayon', 'pbdZMQ', 'devtools'), repos='http://cran.us.r-project.org')
     - devtools::install_github('IRkernel/IRkernel')
     - install.packages(c('bitops', 'RCurl'), repos='http://cran.us.r-project.org')
+    # - install.packages('rJava', repos='http://cran.us.r-project.org')
     become: yes
   - name: install irkernel
     command: Rscript -e "IRkernel::installspec()"
+
+  # spark
 
   - name: R notebook example
     get_url:
@@ -381,24 +384,11 @@
       dest: ./sparkR.sh
       content: |
         sparkR --master spark://{{ groups.private[0] }}:7077 $@
-
-  - name: javareconf
-    command: R CMD javareconf
-    become: yes
-  - name: install depends for sparkr
-    apt:
-      package: "{{ item }}"
-      state: latest
-    become: yes
-    with_items:
-    - jq
-
-# - name: rJava
-#   command: Rscript -e "install.packages('rJava', repos='http://cran.us.r-project.org')"
-#   become: yes
-
-  # spark
-
+  - name: submit.sh
+    copy:
+      dest: ./submit.sh
+      content: |
+        spark-submit --master spark://{{ groups.private[0] }}:7077 $@
   - name: wc.py
     copy:
       dest: ./wc.py
@@ -437,7 +427,7 @@
       url: https://raw.githubusercontent.com/jadianes/spark-py-notebooks/master/nb1-rdd-creation/nb1-rdd-creation.ipynb
       dest: .
   - name: start spark
-    command: /usr/lib/spark/sbin/start-all.sh
+    command: /usr/local/lib/spark/sbin/start-all.sh
 
   # hive
 
@@ -460,18 +450,18 @@
         hadoop fs -mkdir input
         hadoop fs -put const.txt input
         hadoop fs -ls input
-        hadoop jar /usr/lib/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.3.jar wordcount input output
+        hadoop jar /usr/local/lib/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.3.jar wordcount input output
         hadoop fs -lsr
   - name: format hdfs
-    command: /usr/lib/hadoop/bin/hadoop namenode -format
+    command: /usr/local/lib/hadoop/bin/hadoop namenode -format
   - name: start dfs
-    command: /usr/lib/hadoop/sbin/start-dfs.sh
+    command: /usr/local/lib/hadoop/sbin/start-dfs.sh
   - name: create tmp directory in hdfs
-    command: /usr/lib/hadoop/bin/hadoop fs -mkdir -p /tmp
+    command: /usr/local/lib/hadoop/bin/hadoop fs -mkdir -p /tmp
   - name: create home directory in hdfs
-    command: /usr/lib/hadoop/bin/hadoop fs -mkdir -p /user/{{ user }}
+    command: /usr/local/lib/hadoop/bin/hadoop fs -mkdir -p /user/{{ user }}
   - name: start yarn
-    command: /usr/lib/hadoop/sbin/start-yarn.sh
+    command: /usr/local/lib/hadoop/sbin/start-yarn.sh
 
 ##########################################
 
