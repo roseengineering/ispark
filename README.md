@@ -25,11 +25,11 @@ config.yml.
 I. On the computer running the playbook, four files will
 be generated when done: 
 
-1. master.sh: This script connects to the master instance using ssh.
+1. master.sh: Connects to the master instance using ssh.
 
-2. proxy.sh: This script creates a ssh tunnel into tinyproxy which is running on the master.  The script will then open chrome to the spark and hadoop UI webapps running on the cluster.
+2. proxy.sh: Tunnels into tinyproxy on the master node.  The script will then open chrome to the spark and hadoop UI webapps running on the cluster.
 
-3. notebook.sh: This script tunnels to the jupyter server running on the master using ssh.  It then opens chrome to the jupyter notebook. (Jupyter websockets do not work through http proxies.)
+3. notebook.sh: Tunnels to the jupyter server running on the master using ssh.  It then opens chrome to the jupyter notebook. (Jupyter websockets do not work through http proxies.)
 
 4. push.sh: Pushes your local repo up to the master node.
 
