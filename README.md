@@ -11,7 +11,7 @@ To run the playbook, run:
 
      $ ansible-playbook ispark.yml
 
-I installed the python3 version of ansible on my host computer using:
+I installed the python3 version of ansible on my local host computer using:
 
      $ sudo apt-get install python3-setuptools
      $ sudo easy_install3 pip 
@@ -22,7 +22,7 @@ running instances in EC2.  The file yarn-utils.py is program from apache for
 calculating hadoop memory settings.  I used its output to set the values in 
 config.yml.
 
-I. On the computer running the playbook, four files will
+I. On the local host running the playbook, four files will
 be generated when done: 
 
 1. master.sh: Connects to the master instance using ssh.
@@ -47,6 +47,6 @@ II. On the master server additional files are created:
 
 7. wc.sh: Runs wc.py over const.txt.  wc.py is run three times, first in standalone mode, second in yarn client mode, and last in yarn cluster mode.
 
-8. notebook.sh: Runs the jupyter notebook server.  Both the python3 and R notebooks should be available off the "new" button.  Run ispark.sh on the host to access the server.
+8. notebook.sh: Runs the jupyter notebook server.  Both the python3 and R notebooks should be available off the "new" button.  Run notebook.sh on your host to access the server.
 
 
