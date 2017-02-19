@@ -92,6 +92,7 @@
     become: yes
     with_items:
     - openjdk-8-jre-headless
+    - awscli
 
   # files
 
@@ -353,6 +354,7 @@
     apt:
       package: "{{ item }}"
       state: latest
+    become: yes
     with_items:
     - openjdk-8-jdk-headless
     - r-base
@@ -360,15 +362,16 @@
     - libssl-dev           # for devtools
     - libssh2-1-dev        # for devtools
     - libcurl4-openssl-dev # for devtools
-    become: yes
-  - name: build R devtools
+  - name: build irkernel
     command: Rscript -e "{{ item }}"
     with_items:
     - install.packages(c('repr', 'IRdisplay', 'crayon', 'pbdZMQ', 'devtools'), repos='http://cran.us.r-project.org')
     - devtools::install_github('IRkernel/IRkernel')
+    - install.packages(c('bitops', 'RCurl'), repos='http://cran.us.r-project.org')
     become: yes
   - name: install irkernel
     command: Rscript -e "IRkernel::installspec()"
+
   - name: R notebook example
     get_url:
       url: https://raw.githubusercontent.com/jadianes/spark-r-notebooks/master/notebooks/nb0-starting-up/nb0-starting-up.ipynb
@@ -377,10 +380,19 @@
     copy:
       dest: ./sparkR.sh
       content: |
-        sparkR --master spark://{{ groups.private[0] }}:7077
-# - name: javareconf
-#   command: R CMD javareconf
-#   become: yes
+        sparkR --master spark://{{ groups.private[0] }}:7077 $@
+
+  - name: javareconf
+    command: R CMD javareconf
+    become: yes
+  - name: install depends for sparkr
+    apt:
+      package: "{{ item }}"
+      state: latest
+    become: yes
+    with_items:
+    - jq
+
 # - name: rJava
 #   command: Rscript -e "install.packages('rJava', repos='http://cran.us.r-project.org')"
 #   become: yes
@@ -412,7 +424,7 @@
     copy:
       dest: ./pyspark.sh
       content: |
-        pyspark --master spark://{{ groups.private[0] }}:7077
+        pyspark --master spark://{{ groups.private[0] }}:7077 $@
   - name: ispark.sh
     copy:
       dest: ./ispark.sh
