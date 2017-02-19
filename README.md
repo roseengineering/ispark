@@ -22,7 +22,7 @@ running instances in EC2.  The file yarn-utils.py is program from apache for
 calculating hadoop memory settings.  I used its output to set the values in 
 config.yml.
 
-I. On the computer running the playbook, three files will
+I. On the computer running the playbook, four files will
 be generated when done: 
 
 1. master.sh: This script connects to the master instance using ssh.
@@ -30,6 +30,8 @@ be generated when done:
 2. proxy.sh: This script creates a ssh tunnel into tinyproxy which is running on the master.  The script will then open chrome to the spark and hadoop UI webapps running on the cluster.
 
 3. notebook.sh: This script tunnels to the jupyter server running on the master using ssh.  It then opens chrome to the jupyter notebook. (Jupyter websockets do not work through http proxies.)
+
+4. push.sh: Pushes your local repo up to the master node.
 
 II. On the master server additional files are created:
 
@@ -47,5 +49,4 @@ II. On the master server additional files are created:
 
 8. notebook.sh: Runs the jupyter notebook server.  Both the python3 and R notebooks should be available off the "new" button.  Run ispark.sh on the host to access the server.
 
-8. push.sh: Pushes your local repo to master.
 
