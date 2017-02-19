@@ -93,6 +93,7 @@
     with_items:
     - openjdk-8-jre-headless
     - awscli
+    - r-base
 
   # files
 
@@ -357,7 +358,6 @@
     become: yes
     with_items:
     - openjdk-8-jdk-headless
-    - r-base
     - r-base-dev
     - libssl-dev           # for devtools
     - libssh2-1-dev        # for devtools
@@ -368,7 +368,6 @@
     - install.packages(c('repr', 'IRdisplay', 'crayon', 'pbdZMQ', 'devtools'), repos='http://cran.us.r-project.org')
     - devtools::install_github('IRkernel/IRkernel')
     - install.packages(c('bitops', 'RCurl'), repos='http://cran.us.r-project.org')
-    # - install.packages('rJava', repos='http://cran.us.r-project.org')
     become: yes
   - name: install irkernel
     command: Rscript -e "IRkernel::installspec()"
@@ -389,6 +388,15 @@
       dest: ./submit.sh
       content: |
         spark-submit --master spark://{{ groups.private[0] }}:7077 $@
+  - name: wc.R
+    copy:
+      dest: ./wc.R
+      content: |
+        library(SparkR)
+        sparkR.session()
+        df <- as.DataFrame(faithful)
+        count(df)
+        head(select(df, df$eruptions))
   - name: wc.py
     copy:
       dest: ./wc.py
@@ -426,6 +434,9 @@
     get_url:
       url: https://raw.githubusercontent.com/jadianes/spark-py-notebooks/master/nb1-rdd-creation/nb1-rdd-creation.ipynb
       dest: .
+
+  # start spark
+
   - name: start spark
     command: /usr/local/lib/spark/sbin/start-all.sh
 
@@ -452,6 +463,9 @@
         hadoop fs -ls input
         hadoop jar /usr/local/lib/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.3.jar wordcount input output
         hadoop fs -lsr
+
+  # start hadoop
+
   - name: format hdfs
     command: /usr/local/lib/hadoop/bin/hadoop namenode -format
   - name: start dfs

@@ -34,9 +34,11 @@ II. On the master server additional files are created:
 
 3. mapreduce: A simple map-reduce example using const.txt.
 
-4. pyspark.sh: A script which executes pyspark in standalone mode with the address of the cluster as master.
+4. pyspark.sh: A script which executes pyspark in standalone mode.
 
-5. sparkR.sh: A script which executes sparkR in standalone mode with the address of the cluster as master.
+5. sparkR.sh: A script which executes sparkR in standalone mode.
+
+6. submit.sh: A script which runs spark-submit in standalone mode.
 
 6. wc.py: A simple python word count example for spark.
 
