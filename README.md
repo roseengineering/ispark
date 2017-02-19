@@ -1,6 +1,6 @@
 
 This repo contains an example ansible script to bring up a 
-spark, hdfs, and yarn cluster in ec2.  The AWS configuration settings
+spark, hdfs, and yarn cluster in EC2.  The AWS configuration settings
 are set in config.yml.  The ansible playbook is in ispark.yml.  At
 least two instances are needed.
 
@@ -16,6 +16,11 @@ I installed the python3 version of ansible on my host computer using:
      $ sudo apt-get install python3-setuptools
      $ sudo easy_install3 pip 
      $ sudo pip install ansible
+
+Extra programs: The python program kill\_all.py when run will terminate all 
+running instances in EC2.  The file yarn-utils.py is program from apache for
+calculating hadoop memory settings.  I used its output to set the values in 
+config.yml.
 
 I. On the computer running the playbook, three files will
 be generated when done: 
