@@ -27,7 +27,7 @@ be generated when done:
 
 1. master.sh: Connects to the master instance using ssh.
 
-2. proxy.sh: Tunnels into the tinyproxy server on the master node using ssh.  The script opens chrome to the spark and hadoop UI webapps running on the cluster.
+2. proxy.sh: Tunnels into the tinyproxy server on the master node using ssh.  It then opens chrome to the spark and hadoop UI webapps running on the cluster.
 
 3. notebook.sh: Tunnels into the jupyter server on the master node using ssh.  It then opens chrome to the jupyter notebook. (Jupyter websockets do not work through http proxies.)
 
