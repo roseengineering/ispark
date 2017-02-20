@@ -450,6 +450,13 @@
         export R_LIBS="$SPARK_HOME/R/lib:$R_LIBS"
         export SPARK_LOCAL_IP=master
         jupyter notebook $@
+  - name: ipyspark.sh
+    copy:
+      dest: ./ipyspark.sh
+      content: |
+        export PYSPARK_DRIVER_PYTHON=jupyter
+        export PYSPARK_DRIVER_PYTHON_OPTS=notebook
+        pyspark $@
 
   # start spark
 

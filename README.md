@@ -49,4 +49,5 @@ II. On the master server additional files are created:
 
 8. notebook.sh: Runs the Jupyter notebook server.  Both the python3 and R notebooks should be available off the "new" button.  Run notebook.sh on your host to access the server.
 
+9. ipyspark.sh: Runs pyspark as a Jupyter notebook.
 
