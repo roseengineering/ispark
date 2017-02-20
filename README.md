@@ -7,7 +7,7 @@ least two instances are needed.
 Jupyter is also installed, so remote access to pyspark
 as well as sparkR through Jupyter notebooks is possible.
 
-To run the playbook, run:
+To run the playbook, type:
 
      $ ansible-playbook ispark.yml
 
@@ -44,6 +44,8 @@ II. On the master server additional files are created:
 6. submit.sh: Runs spark-submit in standalone mode.
 
 6. wc.py: A simple python word count example for spark.
+
+7. wc.R: A simple R example that counts lines in a file.
 
 7. wc.sh: Runs wc.py over const.txt.  wc.py is run three times, first in standalone mode, second in yarn client mode, and last in yarn cluster mode.
 
