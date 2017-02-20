@@ -197,35 +197,43 @@
 
   # configure spark
 
-  - name: slaves
+  - name: spark slaves
     lineinfile:
       dest: /usr/local/lib/spark/conf/slaves
       line: "{{ item }}"
       create: yes
     with_items: "{{ groups.private[1:] }}"
-  - name: master
+  - name: spark-env.sh
     copy:
       dest: /usr/local/lib/spark/conf/spark-env.sh
       content: |
          export SPARK_MASTER_HOST=master
          export PYTHONHASHSEED=0
+  - name: spark-defaults.conf
+    copy:
+      dest: /usr/local/lib/spark/conf/spark-defaults.conf
+      content: |
+        spark.master spark://master:7077
 
   # configure hadoop
 
-  - file: 
+  - name: dfs directory
+    file:
       dest: "{{ data_path }}/dfs"
       state: directory
       owner: "{{ user }}" 
     become: yes
-  - file: 
+  - name: yarn directory
+    file:
       dest: "{{ data_path }}/yarn"
       state: directory
       owner: "{{ user }}"
     become: yes
-  - file: 
+  - name: hadoop slaves
+    file:
       dest: /usr/local/lib/hadoop/etc/hadoop/slaves
       state: absent
-  - name: slaves
+  - name: hadoop slaves
     lineinfile:
       dest: /usr/local/lib/hadoop/etc/hadoop/slaves
       line: "{{ item }}"
@@ -247,7 +255,7 @@
     - <name>dfs.name.dir</name><value>file://{{ data_path }}/dfs/nn</value>
     - <name>dfs.data.dir</name><value>file://{{ data_path }}/dfs/dn</value>
     - <name>dfs.namenode.checkpoint.dir</name><value>file://{{ data_path }}/dfs/snn</value>
-  - name: core-site.xml
+  - name: hadoop core-site.xml
     lineinfile:
       dest: /usr/local/lib/hadoop/etc/hadoop/core-site.xml
       line: <property>{{ item }}</property>
@@ -291,7 +299,8 @@
 
   # configure hive
 
-  - file: 
+  - name: hive directory
+    file: 
       dest: "{{ data_path }}/hive"
       state: directory
       owner: "{{ user }}"
@@ -397,21 +406,14 @@
 
   # spark
 
-  - name: submit.sh
-    copy:
-      dest: ./submit.sh
-      content: |
-        spark-submit --master spark://master:7077 $@
   - name: wc.R
     copy:
       dest: ./wc.R
       content: |
         library(SparkR)
-        sc = sparkR.session(master="spark://master:7077")
-        # rdd = SparkR:::textFile(sc, 'const.txt'); count(rdd)
-        df <- as.DataFrame(faithful)
-        count(df)
-        head(select(df, df$eruptions))
+        sc = sparkR.session()
+        rdd = read.text('/user/george/const.txt')
+        count(rdd)
   - name: wc.py
     copy:
       dest: ./wc.py
@@ -428,7 +430,7 @@
       dest: ./wc.sh
       content: |
         hadoop fs -put const.txt .
-        spark-submit --master spark://master:7077 wc.py
+        spark-submit wc.py
         echo press return to continue; read INPUT
         spark-submit --master yarn wc.py
         echo press return to continue; read INPUT
