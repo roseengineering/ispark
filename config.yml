@@ -6,9 +6,8 @@ vpc_subnet: subnet-ee72ddc5
 
 # cluster
 
-count: 3
-instance_type: m4.large
-# instance_type: t2.micro
+count: 2
+instance_type: m4.large # t2.micro
 data_path: /var
 user: "{{ lookup('env','USER') }}"
 image: ami-f0768de6
