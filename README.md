@@ -29,7 +29,7 @@ be generated when done:
 
 2. proxy.sh: Tunnels into the tinyproxy server on the master node using ssh.  It then opens chrome to the spark and hadoop UI webapps running on the cluster.
 
-3. notebook.sh: Tunnels into the jupyter server on the master node using ssh.  It then opens chrome to the jupyter notebook. (Jupyter websockets do not work through http proxies.)
+3. notebook.sh: Tunnels into the Jupyter server on the master node using ssh.  It then opens chrome to the Jupyter notebook. (Jupyter websockets do not work through http proxies.)
 
 4. push.sh: Pushes your local repo up to the master node.
 
@@ -41,14 +41,12 @@ II. On the master server additional files are created:
 
 3. mapreduce.sh: Runs a simple map-reduce example using const.txt.
 
-6. submit.sh: Runs spark-submit in standalone mode.
-
 6. wc.py: A simple python word count example for spark.
 
 7. wc.R: A simple R example that counts lines in a file.
 
 7. wc.sh: Runs wc.py over const.txt.  wc.py is run three times, first in standalone mode, second in yarn client mode, and last in yarn cluster mode.
 
-8. notebook.sh: Runs the jupyter notebook server.  Both the python3 and R notebooks should be available off the "new" button.  Run notebook.sh on your host to access the server.
+8. notebook.sh: Runs the Jupyter notebook server.  Both the python3 and R notebooks should be available off the "new" button.  Run notebook.sh on your host to access the server.
 
 

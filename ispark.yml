@@ -195,26 +195,6 @@
   - name: remove spark archive
     file: dest=spark.tgz state=absent
 
-  # configure spark
-
-  - name: spark slaves
-    lineinfile:
-      dest: /usr/local/lib/spark/conf/slaves
-      line: "{{ item }}"
-      create: yes
-    with_items: "{{ groups.private[1:] }}"
-  - name: spark-env.sh
-    copy:
-      dest: /usr/local/lib/spark/conf/spark-env.sh
-      content: |
-         export SPARK_MASTER_HOST=master
-         export PYTHONHASHSEED=0
-  - name: spark-defaults.conf
-    copy:
-      dest: /usr/local/lib/spark/conf/spark-defaults.conf
-      content: |
-        spark.master spark://master:7077
-
   # configure hadoop
 
   - name: dfs directory
@@ -319,6 +299,31 @@
     with_items: 
     - <name>hive.metastore.warehouse.dir</name><value>{{ data_path }}/hive</value>
     - <name>javax.jdo.option.ConnectionURL</name><value>jdbc:derby:;databaseName={{ data_path }}/hive/metastore_db;create=true</value>
+
+  # configure spark
+
+  - name: spark slaves
+    lineinfile:
+      dest: /usr/local/lib/spark/conf/slaves
+      line: "{{ item }}"
+      create: yes
+    with_items: "{{ groups.private[1:] }}"
+  - name: spark-env.sh
+    copy:
+      dest: /usr/local/lib/spark/conf/spark-env.sh
+      content: |
+         export SPARK_MASTER_HOST=master
+         export PYTHONHASHSEED=0
+  - name: spark-defaults.conf
+    copy:
+      dest: /usr/local/lib/spark/conf/spark-defaults.conf
+      content: |
+        spark.master spark://master:7077
+  - name: spark hive-site.conf
+    copy:
+      src: /usr/local/lib/hive/conf/hive-site.xml
+      dest: /usr/local/lib/spark/conf
+      remote_src: yes
 
 ##########################################
 
