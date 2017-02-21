@@ -314,11 +314,13 @@
       content: |
          export SPARK_MASTER_HOST=master
          export PYTHONHASHSEED=0
+         export HADOOP_OPTS="-Dderby.stream.error.file=/dev/null"
   - name: spark-defaults.conf
     copy:
       dest: /usr/local/lib/spark/conf/spark-defaults.conf
       content: |
         spark.master spark://master:7077
+        spark.driver.extraJavaOptions -Dderby.stream.error.file=/dev/null
   - name: spark hive-site.conf
     copy:
       src: /usr/local/lib/hive/conf/hive-site.xml
