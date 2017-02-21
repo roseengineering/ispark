@@ -483,10 +483,8 @@
   - copy:
       dest: ./mapreduce.sh
       content: |
-        hadoop fs -mkdir input
-        hadoop fs -put const.txt input
-        hadoop fs -ls input
-        hadoop jar /usr/local/lib/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.3.jar wordcount input output
+        hadoop fs -put const.txt .
+        hadoop jar /usr/local/lib/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.3.jar wordcount const.txt output
         hadoop fs -lsr
 
   # start hadoop
