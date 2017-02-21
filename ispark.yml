@@ -224,6 +224,7 @@
       dest: /usr/local/lib/hadoop/etc/hadoop/hadoop-env.sh
       line: "{{ item }}"
     with_items: 
+      - export HADOOP_OPTS="-Dderby.stream.error.file=/dev/null"
       - export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
       - export PYTHONHASHSEED=0
   - name: hdfs-site.xml
@@ -314,7 +315,6 @@
       content: |
          export SPARK_MASTER_HOST=master
          export PYTHONHASHSEED=0
-         export HADOOP_OPTS="-Dderby.stream.error.file=/dev/null"
   - name: spark-defaults.conf
     copy:
       dest: /usr/local/lib/spark/conf/spark-defaults.conf
