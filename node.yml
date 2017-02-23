@@ -142,7 +142,7 @@
       line: <property>{{ item }}</property>
       insertbefore: </configuration>
     with_items: 
-    - <name>hive.metastore.warehouse.dir</name><value>{{ data_path }}/hive</value>
+    - <name>hive.metastore.warehouse.dir</name><value>{{ data_path }}/hive/warehouse</value>
     - <name>javax.jdo.option.ConnectionURL</name><value>jdbc:derby:;databaseName={{ data_path }}/hive/metastore_db;create=true</value>
 
   # spark

@@ -36,7 +36,7 @@
       content: |
         library(SparkR)
         sc = sparkR.session()
-        rdd = read.text('/user/{{ user }}/const.txt')
+        rdd = read.text('const.txt')
         count(rdd)
 
   # hive

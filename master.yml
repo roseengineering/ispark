@@ -22,7 +22,7 @@
   - name: create tmp directory in hdfs
     command: /usr/local/lib/hadoop/bin/hadoop fs -mkdir -p /tmp
   - name: create home directory in hdfs
-    command: /usr/local/lib/hadoop/bin/hadoop fs -mkdir -p /user/{{ user }}
+    command: /usr/local/lib/hadoop/bin/hadoop fs -mkdir -p /home/{{ user }}
   - name: start yarn
     command: /usr/local/lib/hadoop/sbin/start-yarn.sh
 

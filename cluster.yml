@@ -42,6 +42,7 @@
       line: <property>{{ item }}</property>
       insertbefore: </configuration>
     with_items: 
+    - <name>dfs.user.home.dir.prefix</name><value>/home</value>
     - <name>dfs.name.dir</name><value>file://{{ data_path }}/dfs/nn</value>
     - <name>dfs.data.dir</name><value>file://{{ data_path }}/dfs/dn</value>
     - <name>dfs.namenode.checkpoint.dir</name><value>file://{{ data_path }}/dfs/snn</value>
