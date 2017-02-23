@@ -1,0 +1,181 @@
+# node
+---
+  # boto
+
+  - name: boto.cfg
+    copy:
+      dest: /etc/boto.cfg
+      content: |
+        [Credentials]
+        aws_access_key_id={{ lookup('pipe', 'aws configure --profile {{ profile }} get aws_access_key_id') }}
+        aws_secret_access_key={{ lookup('pipe', 'aws configure --profile {{ profile }} get aws_secret_access_key') }}
+    become: yes
+
+  # packages
+
+  - name: update cache
+    apt:
+      update_cache: yes
+    become: yes
+  - name: install java on all nodes
+    apt:
+      package: "{{ item }}"
+      state: latest
+    become: yes
+    with_items:
+    - openjdk-8-jre-headless
+    - r-base-core
+    - git
+    - awscli
+
+  # git
+
+  - name: git init
+    command: git init --bare .git
+  - name: git hook
+    copy: 
+      dest: .git/hooks/post-receive 
+      mode: 0775
+      content: |
+        while read oldrev newrev ref; do
+          echo $ref
+          if [ "$ref" = "refs/heads/master" ]; then
+            export GIT_WORK_TREE=$(dirname $PWD)
+            git clean -f -d -e "/.*" $GIT_WORK_TREE
+            git checkout -f master
+          fi
+        done
+
+  # files
+
+  - name: .ssh/config
+    copy: 
+      dest: .ssh/config
+      content: |
+        StrictHostKeyChecking no
+  - name: .screenrc
+    copy: 
+      dest: ./.screenrc
+      content: |
+        escape ^Oo
+        termcapinfo xterm* ti@:te@
+        bind x
+        bind ^x
+  - name: copy .ssh/id_rsa
+    copy: 
+      src: ~/.ssh/id_rsa
+      dest: .ssh/id_rsa
+      mode: 0600
+  - name: .profile
+    lineinfile:
+      dest: ~/.profile 
+      line: "{{ item }}"
+    with_items: 
+    - PATH="/usr/local/lib/spark/bin:$PATH"
+    - PATH="/usr/local/lib/hadoop/bin:$PATH"
+    - PATH="/usr/local/lib/hive/bin:$PATH"
+    - export YARN_CONF_DIR=/usr/local/lib/hadoop/etc/hadoop
+    - export PYSPARK_PYTHON=python3
+    - '[ -z "$STY" -a -n "$SSH_TTY" ] && exec screen -RR'
+
+  # hadoop
+
+  - name: download hadoop
+    get_url:
+      url: http://mirror.cc.columbia.edu/pub/software/apache/hadoop/common/hadoop-2.7.3/hadoop-2.7.3.tar.gz
+      dest: ./hadoop.tgz
+  - name: create hadoop directory
+    file: 
+      dest: /usr/local/lib/hadoop
+      state: directory
+      owner: "{{ user }}"
+    become: yes
+  - name: untar hadoop
+    unarchive:
+      src: /home/{{ user }}/hadoop.tgz
+      dest: /usr/local/lib/hadoop
+      extra_opts: --strip-components=1
+      remote_src: yes
+  - name: remove hadoop archive
+    file: dest=hadoop.tgz state=absent
+  - name: hadoop-env.sh
+    lineinfile:
+      dest: /usr/local/lib/hadoop/etc/hadoop/hadoop-env.sh
+      line: "{{ item }}"
+    with_items: 
+      - export HADOOP_OPTS="-Dderby.stream.error.file=/dev/null"
+      - export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+      - export PYTHONHASHSEED=0
+
+  # hive
+
+  - name: download hive
+    get_url:
+      url: http://mirror.cc.columbia.edu/pub/software/apache/hive/hive-1.2.1/apache-hive-1.2.1-bin.tar.gz
+      dest: ./hive.tgz
+  - name: create hive directory
+    file: 
+      dest: /usr/local/lib/hive
+      state: directory
+      owner: "{{ user }}"
+    become: yes
+  - name: untar hive 
+    unarchive:
+      src: /home/{{ user }}/hive.tgz
+      dest: /usr/local/lib/hive
+      extra_opts: --strip-components=1
+      remote_src: yes
+  - name: remove hive archive
+    file: dest=hive.tgz state=absent
+  - name: hive directory
+    file: 
+      dest: "{{ data_path }}/hive"
+      state: directory
+      owner: "{{ user }}"
+    become: yes
+  - name: hive-site.xml
+    copy:
+      dest: /usr/local/lib/hive/conf/hive-site.xml
+      content: |
+        <configuration>
+        </configuration>
+  - name: hive-site.xml
+    lineinfile:
+      dest: /usr/local/lib/hive/conf/hive-site.xml
+      line: <property>{{ item }}</property>
+      insertbefore: </configuration>
+    with_items: 
+    - <name>hive.metastore.warehouse.dir</name><value>{{ data_path }}/hive</value>
+    - <name>javax.jdo.option.ConnectionURL</name><value>jdbc:derby:;databaseName={{ data_path }}/hive/metastore_db;create=true</value>
+
+  # spark
+
+  - name: download spark
+    get_url:
+      url: http://mirror.cc.columbia.edu/pub/software/apache/spark/spark-2.1.0/spark-2.1.0-bin-hadoop2.7.tgz
+      dest: ./spark.tgz
+  - name: create spark directory
+    file: 
+      dest: /usr/local/lib/spark 
+      state: directory
+      owner: "{{ user }}"
+    become: yes
+  - name: untar spark
+    unarchive:
+      src: /home/{{ user }}/spark.tgz
+      dest: /usr/local/lib/spark
+      extra_opts: --strip-components=1
+      remote_src: yes
+  - name: remove spark archive
+    file: dest=spark.tgz state=absent
+  - name: spark-defaults.conf
+    copy:
+      dest: /usr/local/lib/spark/conf/spark-defaults.conf
+      content: |
+        spark.driver.extraJavaOptions -Dderby.stream.error.file=/dev/null
+  - name: copy hive-site.conf to spark
+    copy:
+      src: /usr/local/lib/hive/conf/hive-site.xml
+      dest: /usr/local/lib/spark/conf
+      remote_src: yes
+

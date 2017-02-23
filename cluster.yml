@@ -1,0 +1,116 @@
+# cluster
+---
+  # hosts (otherwise hdfs will not start)
+
+  - name: hostnames
+    lineinfile:
+      dest: /etc/hosts
+      line: "{{ item.1 }} node{{ item.0 }}"
+    with_indexed_items: "{{ groups.private }}"
+    become: yes
+
+  # configure hadoop
+
+  - name: dfs directory
+    file:
+      dest: "{{ data_path }}/dfs"
+      state: directory
+      owner: "{{ user }}" 
+    become: yes
+
+  - name: yarn directory
+    file:
+      dest: "{{ data_path }}/yarn"
+      state: directory
+      owner: "{{ user }}"
+    become: yes
+
+  - name: hadoop slaves
+    file:
+      dest: /usr/local/lib/hadoop/etc/hadoop/slaves
+      state: absent
+  - name: hadoop slaves
+    lineinfile:
+      dest: /usr/local/lib/hadoop/etc/hadoop/slaves
+      line: "{{ item }}"
+      create: yes
+    with_items: "{{ groups.private[1:] }}"
+
+  - name: hdfs-site.xml
+    lineinfile:
+      dest: /usr/local/lib/hadoop/etc/hadoop/hdfs-site.xml
+      line: <property>{{ item }}</property>
+      insertbefore: </configuration>
+    with_items: 
+    - <name>dfs.name.dir</name><value>file://{{ data_path }}/dfs/nn</value>
+    - <name>dfs.data.dir</name><value>file://{{ data_path }}/dfs/dn</value>
+    - <name>dfs.namenode.checkpoint.dir</name><value>file://{{ data_path }}/dfs/snn</value>
+
+  - name: hadoop core-site.xml
+    lineinfile:
+      dest: /usr/local/lib/hadoop/etc/hadoop/core-site.xml
+      line: <property>{{ item }}</property>
+      insertbefore: </configuration>
+    with_items: 
+    - <name>fs.defaultFS</name><value>hdfs://{{ groups.private[0] }}</value>
+
+  - name: mapred-site.xml
+    copy:
+      dest: /usr/local/lib/hadoop/etc/hadoop/mapred-site.xml
+      content: |
+        <configuration>
+        </configuration>
+  - name: mapred-site.xml
+    lineinfile:
+      dest: /usr/local/lib/hadoop/etc/hadoop/mapred-site.xml
+      line: <property>{{ item }}</property>
+      insertbefore: </configuration>
+    with_items: 
+    - <name>mapreduce.framework.name</name><value>yarn</value>
+    - <name>mapreduce.map.memory.mb</name><value>{{ map_memory_mb }}</value>
+    - <name>mapreduce.map.java.opts</name><value>{{ map_memory_opts }}</value>
+    - <name>mapreduce.reduce.memory.mb</name><value>{{ reduce_memory_mb }}</value>
+    - <name>mapreduce.reduce.java.opts</name><value>{{ reduce_memory_opts }}</value>
+    - <name>mapreduce.task.io.sort.mb</name><value>{{ sort_memory_mb }}</value>
+    - <name>yarn.app.mapreduce.am.resource.mb</name><value>{{ am_memory_mb }}</value>
+    - <name>yarn.app.mapreduce.am.command-opts</name><value>{{ am_memory_opts }}</value>
+
+  - name: yarn-site.xml
+    lineinfile:
+      dest: /usr/local/lib/hadoop/etc/hadoop/yarn-site.xml
+      line: <property>{{ item }}</property>
+      insertbefore: </configuration>
+    with_items: 
+    - <name>yarn.scheduler.minimum-allocation-mb</name><value>{{ yarn_minimum_mb }}</value>
+    - <name>yarn.scheduler.maximum-allocation-mb</name><value>{{ yarn_maximum_mb }}</value>
+    - <name>yarn.nodemanager.resource.memory-mb</name><value>{{ yarn_maximum_mb }}</value>
+    - <name>yarn.resourcemanager.hostname</name><value>localhost</value>
+    - <name>yarn.nodemanager.local-dirs</name><value>{{ data_path }}/yarn</value>
+    - <name>yarn.nodemanager.aux-services</name><value>mapreduce_shuffle</value>
+    - <name>yarn.resourcemanager.hostname</name><value>{{ groups.private[0] }}</value>
+    - <name>yarn.nodemanager.hostname</name><value>{{ groups.private[play_hosts.index(inventory_hostname)] }}</value>
+
+  # configure spark
+
+  - name: spark slaves
+    lineinfile:
+      dest: /usr/local/lib/spark/conf/slaves
+      line: "{{ item }}"
+      create: yes
+    with_items: "{{ groups.private[1:] }}"
+  - name: spark-defaults.conf
+    copy:
+      dest: /usr/local/lib/spark/conf/spark-defaults.conf
+      content: |
+        spark.driver.extraJavaOptions -Dderby.stream.error.file=/dev/null
+        spark.master spark://{{ groups.private[0] }}:7077
+
+  # spark_master_host required by standalone mode
+  - name: spark-env.sh
+    copy:
+      dest: /usr/local/lib/spark/conf/spark-env.sh
+      content: |
+        export SPARK_MASTER_HOST={{ groups.private[0] }}
+        export SPARK_LOCAL_IP={{ groups.private[play_hosts.index(inventory_hostname)] }}
+        export PYTHONHASHSEED=0
+

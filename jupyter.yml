@@ -1,0 +1,73 @@
+---
+  - name: install packages on master
+    apt:
+      package: "{{ item }}"
+      state: latest
+    become: yes
+    with_items:
+    - python3-setuptools
+    - python3-dev
+
+  # jupyter
+
+  - name: install pip
+    command: easy_install3 pip
+    become: yes
+  - name: install jupyter
+    command: pip install jupyter
+    become: yes
+  - name: .jupyter/
+    file:
+      dest: ./.jupyter
+      state: directory
+  - name: .jupyter/jupyter_notebook_config.py 
+    copy:
+      dest: .jupyter/jupyter_notebook_config.py 
+      content: |
+        c.NotebookApp.open_browser = False
+        c.NotebookApp.port = 8000
+        c.NotebookApp.token = ''
+
+  # note spark_home required otherwise import pyspark fails
+  - name: notebook.sh
+    copy:
+      dest: ./notebook.sh
+      content: |
+        export SPARK_HOME=/usr/local/lib/spark
+        export PYTHONPATH="$SPARK_HOME/python:$PYTHONPATH"
+        export PYTHONPATH="$SPARK_HOME/python/lib/py4j-0.10.4-src.zip:$PYTHONPATH"
+        export R_LIBS="$SPARK_HOME/R/lib"
+        jupyter notebook $@
+  - name: ipyspark.sh
+    copy:
+      dest: ./ipyspark.sh
+      content: |
+        export PYSPARK_DRIVER_PYTHON=jupyter
+        export PYSPARK_DRIVER_PYTHON_OPTS=notebook
+        export R_LIBS="/usr/local/lib/spark/R/lib"
+        pyspark $@
+
+  # irkernel
+
+  - name: install R packages on master
+    apt:
+      package: "{{ item }}"
+      state: latest
+    become: yes
+    with_items:
+    - openjdk-8-jdk-headless
+    - r-base-dev
+    - libssl-dev           # for devtools
+    - libssh2-1-dev        # for devtools
+    - libcurl4-openssl-dev # for devtools
+
+  - name: build irkernel
+    command: Rscript -e "{{ item }}"
+    with_items:
+    - install.packages(c('repr', 'IRdisplay', 'crayon', 'pbdZMQ', 'devtools'), repos='http://cran.us.r-project.org')
+    - devtools::install_github('IRkernel/IRkernel')
+    - install.packages(c('bitops', 'RCurl'), repos='http://cran.us.r-project.org')
+    become: yes
+  - name: install irkernel
+    command: Rscript -e "IRkernel::installspec()"
+

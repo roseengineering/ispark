@@ -1,0 +1,29 @@
+# master
+---
+  - name: install packages on master
+    apt:
+      package: "{{ item }}"
+      state: latest
+    become: yes
+    with_items:
+    - tinyproxy
+
+  # start spark
+
+  - name: start spark
+    command: /usr/local/lib/spark/sbin/start-all.sh
+
+  # start hadoop
+
+  - name: format hdfs
+    command: /usr/local/lib/hadoop/bin/hadoop namenode -format
+  - name: start dfs
+    command: /usr/local/lib/hadoop/sbin/start-dfs.sh
+  - name: create tmp directory in hdfs
+    command: /usr/local/lib/hadoop/bin/hadoop fs -mkdir -p /tmp
+  - name: create home directory in hdfs
+    command: /usr/local/lib/hadoop/bin/hadoop fs -mkdir -p /user/{{ user }}
+  - name: start yarn
+    command: /usr/local/lib/hadoop/sbin/start-yarn.sh
+
+

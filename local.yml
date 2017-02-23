@@ -1,0 +1,38 @@
+# local
+---
+  - name: master.sh
+    copy:
+      dest: ./master.sh
+      content: |
+        ssh {{ groups.public[0] }}
+  - name: master.sh
+    lineinfile:
+      dest: ./master.sh
+      line: "# ssh {{ item }}"
+    with_items: "{{ groups.public[1:] }}"
+  - name: proxy.sh
+    copy:
+      dest: ./proxy.sh
+      content: |
+        google-chrome --proxy-server=localhost:8888 {{ groups.private[0] }}:8080 &  # spark
+        google-chrome --proxy-server=localhost:8888 {{ groups.private[0] }}:8088 &  # yarn RM
+        google-chrome --proxy-server=localhost:8888 {{ groups.private[0] }}:50070 & # namenode
+        ssh -N -L 8888:localhost:8888 {{ groups.public[0] }}
+  - name: proxy.sh
+    lineinfile:
+      dest: ./proxy.sh
+      line: google-chrome --proxy-server=localhost:8888 {{ item }}:8042 & # yarn NM
+      insertbefore: ssh
+    with_items: "{{ groups.private[1:] }}"
+  - name: notebook.sh
+    copy:
+      dest: ./notebook.sh
+      content: |
+        google-chrome http://localhost:8000 &
+        ssh -N -L 8000:localhost:8000 {{ groups.public[0] }}
+  - name: push.sh
+    copy:
+      dest: ./push.sh
+      content: |
+        git push ssh://{{ groups.public[0] }}/~/.git master
+

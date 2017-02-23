@@ -1,0 +1,64 @@
+# examples
+---
+  - name: const.txt
+    get_url:
+      url: http://www.usconstitution.net/const.txt
+      dest: .
+
+  # spark
+
+  - name: wc.py
+    copy:
+      dest: ./wc.py
+      content: |
+        from pyspark import SparkContext
+        sc = SparkContext(appName="wc")
+        lines = sc.textFile('const.txt')
+        lines_nonempty = lines.filter( lambda x: len(x) > 0 )
+        words = lines_nonempty.flatMap(lambda x: x.split())
+        wordcounts = words.map(lambda x: (x, 1)).reduceByKey(lambda x,y:x+y).map(lambda x:(x[1],x[0])).sortByKey(False)
+        print(wordcounts.take(10))
+
+  - name: wc.sh
+    copy:
+      dest: ./wc.sh
+      content: |
+        hadoop fs -put const.txt .
+        spark-submit wc.py
+        echo press return to continue; read INPUT
+        spark-submit --master yarn wc.py
+        echo press return to continue; read INPUT
+        spark-submit --master yarn --deploy-mode cluster wc.py
+
+  - name: wc.R
+    copy:
+      dest: ./wc.R
+      content: |
+        library(SparkR)
+        sc = sparkR.session()
+        rdd = read.text('const.txt')
+        count(rdd)
+
+  # hive
+
+  - copy:
+      dest: ./hive.sh
+      content: |
+        hive <<EOF
+        create table dummy (value string);
+        load data local inpath 'const.txt' overwrite into table dummy;
+        select count(*) from dummy;
+        show tables;
+        describe dummy;
+        EOF
+
+  # hadoop
+
+  - copy:
+      dest: ./mapreduce.sh
+      content: |
+        hadoop fs -put const.txt .
+        hadoop jar /usr/local/lib/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.3.jar wordcount const.txt output
+        hadoop fs -lsr
+
+
