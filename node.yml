@@ -13,12 +13,9 @@
 
   # packages
 
-  - name: update cache
-    apt:
-      update_cache: yes
-    become: yes
   - name: install java on all nodes
     apt:
+      update_cache: yes
       package: "{{ item }}"
       state: latest
     become: yes
